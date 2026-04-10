@@ -70,14 +70,41 @@ const handleSwitchTab = (tab: string) => {
 </template>
 
 <style scoped>
-.auth-tabs ::v-deep(.el-tabs__nav) {
+/* 保持原有居中 */
+.auth-tabs :deep(.el-tabs__nav) {
   width: 100%;
   display: flex;
-  justify-content: center; /* 确保导航居中 */
+  justify-content: center;
 }
 
-.auth-tabs ::v-deep(.el-tabs__item) {
+.auth-tabs :deep(.el-tabs__item) {
   flex: 1;
   text-align: center;
+  color: #b3b3b3; /* Spotify 次级文本灰 */
+  font-weight: 600;
+}
+
+.auth-tabs :deep(.el-tabs__item.is-active) {
+  color: #1DB954; /* 🌟 灵魂变色：Spotify 绿 */
+}
+
+/* 弹窗整体背景和标题 */
+:deep(.el-dialog) {
+  background-color: #181818; /* Spotify 卡片经典底色 */
+  border-radius: 12px;
+  border: 1px solid #282828; 
+}
+
+:deep(.el-dialog__title) {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #b3b3b3;
+}
+
+:deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+  color: #ffffff;
 }
 </style>
