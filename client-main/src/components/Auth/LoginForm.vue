@@ -107,7 +107,7 @@ function switchToReset() {
 }
 
 .form-subtitle {
-  color: #b3b3b3; /* Spotify 灰 */
+  color: #b3b3b3; /* Spotify 次级文本灰 */
   margin-bottom: 24px;
   font-size: 14px;
 }
@@ -116,42 +116,45 @@ function switchToReset() {
   margin-bottom: 20px;
 }
 
-/* 输入框变身 */
-:deep(.el-input__wrapper) {
-  background-color: #282828; /* Spotify 输入框深灰 */
-  box-shadow: 0 0 0 1px #333333 inset; 
+/* 🌟 核心修改：强制覆盖输入框背景为深灰，文字为白 */
+/* 使用 !important 确保覆盖 Element Plus 的默认白色 */
+.login-container :deep(.el-input__wrapper) {
+  background-color: #282828 !important; /* Spotify 输入框深灰 */
+  box-shadow: 0 0 0 1px #333333 inset !important; /* 灰色边框 */
   border-radius: 8px;
 }
 
 /* 🌟 输入框聚焦时的外发光效果，改成绿色！ */
-:deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #1DB954 inset; 
+.login-container :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #1DB954 inset !important; /* 聚焦时变成 Spotify 绿 */
 }
 
-:deep(.el-input__inner) {
-  color: #ffffff;
+/* 🌟 强制修改输入框内的文字颜色为白色 */
+.login-container :deep(.el-input__inner) {
+  color: #ffffff !important;
 }
 
-:deep(.el-input__prefix-inner) {
+/* 修改输入框左侧图标颜色 */
+.login-container :deep(.el-input__prefix-inner) {
   color: #b3b3b3;
 }
 
-/* 🌟 核心视觉焦点：大绿按钮 */
+/* Spotify 风格的大绿按钮 */
 .submit-btn {
   width: 100%;
-  border-radius: 500px; /* Spotify 喜欢把大按钮做成完全的圆角 */
+  border-radius: 500px;
   height: 44px;
   font-size: 16px;
   font-weight: bold;
-  background-color: #1DB954; 
-  color: #000000; /* 荧光绿底色配黑字，对比度最高、最地道 */
+  background-color: #1DB954;
+  color: #000000;
   border: none;
   transition: transform 0.1s, background-color 0.2s;
 }
 
 .submit-btn:hover {
-  background-color: #1ed760; /* 悬浮时绿色稍微变亮一点 */
-  transform: scale(1.02); /* 悬浮时微微放大，质感拉满 */
+  background-color: #1ed760;
+  transform: scale(1.02);
 }
 
 .signup-text {
@@ -167,7 +170,7 @@ function switchToReset() {
 }
 
 .signup-text a:hover {
-  color: #1DB954; /* 链接悬浮变绿 */
+  color: #1DB954;
   text-decoration: underline;
 }
 
