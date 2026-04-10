@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+/* 背景色改为深灰 (#121212) */
+    --theme-bg-color: 0, 0%, 0%, 100%;
+    --dm-background: 0, 0%, 7%, 100%;
+    
+    --background: 0 0% 10%; 
+    --foreground: 0 0% 100%; /* 纯白文字，解决侧边栏隐身问题 */
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 70%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    --card: 0 0% 12% / 100%;
+    --card-foreground: 0 0% 100%;
+
+    --border: 0 0% 15% / 100%;
+    --input: 0 0% 18%;
+
+    --inactive: 0 0% 70%;
+
+    --heroui-default: 0 0% 15%;
+    --bg-content1: 0 0% 10%;
+
+    --hover-menu-bg: 0 0% 15% / 100%;
+    --active-menu-bg: 0 0% 18% / 100%;
+
+    /* 强制全局使用 Spotify 绿 */
+    --primary: #1DB954;
+    --primary-foreground: 0 0% 100%; 
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 0 0% 100%;
+
+    --radius: 0.5rem;
+  }
+
+.dark {
+    /* 背景色改为纯黑 (#000000) 和深灰 (#121212) */
+    --theme-bg-color: 0, 0%, 0%, 100%;
+    --dm-background: 0, 0%, 7%, 100%;
+
+    --background: 0, 0%, 7%, 100%; 
+    --foreground: 0, 0%, 100%; /* 纯白文字 */
+
+    /* 减弱次要文字的亮度，突出主次关系 (灰白色) */
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 70%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    --inactive: 0 0% 70%;
+
+    --heroui-default: 0 0% 15%;
+    --bg-content1: 0 0% 10%;
+
+    /* 左侧菜单栏的悬浮和激活状态改为深灰色，去掉蓝色透明度 */
+    --hover-menu-bg: 0 0% 15% / 100%;
+    --active-menu-bg: 0 0% 18% / 100%;
+
+    --card: 0 0% 12% / 100%;
+    --card-foreground: 0 0% 100%;
+
+    /* 边框颜色调暗，让界面更无缝 */
+    --border: 0 0% 15% / 100%;
+    --input: 0 0% 18%;
+
+    /* 强制全局使用 Spotify 绿 */
+    --primary: #1DB954;
+    --primary-foreground: 0 0% 100%; 
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 0 0% 100%;
+
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
