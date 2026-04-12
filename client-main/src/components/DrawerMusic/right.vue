@@ -231,13 +231,12 @@ watch(() => comments.value, async (newComments) => {
     return
   }
 
-  //  3. 生成 ECharts 气泡图的数据格式
+  //  3. 生成 ECharts 气泡图的数据格式 (转为引力场模式)
   const bubbleData = topWords.map(item => {
     return {
       name: item.name,
-      // value: [x坐标, y坐标, 实际频次] （我们用随机数打散 x 和 y，形成悬浮气泡效果）
-      value: [Math.random() * 100, Math.random() * 100, item.count],
-      // 气泡大小：基础大小 20 + 频次倍数（如果基数小可以把倍数调大，比如 * 5）
+      // 在关系图中，value 直接写次数即可，不需要随机坐标了！引擎会自动算！
+      value: item.count, 
       symbolSize: 20 + (item.count * 8), 
       itemStyle: {
         color: item.color,
@@ -247,7 +246,7 @@ watch(() => comments.value, async (newComments) => {
       },
       label: {
         show: true,
-        formatter: '{b}', // 只显示文字
+        formatter: '{b}',
         color: '#ffffff',
         fontWeight: 'bold',
         fontSize: 14
@@ -255,31 +254,37 @@ watch(() => comments.value, async (newComments) => {
     }
   })
 
-// 重点：在画新气泡之前，先清理掉可能的旧提示语和旧气泡
+  // 重点：在画新气泡之前，先清理掉可能的旧提示语和旧气泡
   myChart?.clear()
 
-  //  4. 渲染气泡图
+  //  4. 渲染气泡图 (开启物理力场)
   myChart?.setOption({
     backgroundColor: 'transparent',
-    // 隐藏坐标轴，让气泡悬浮在空中
-    xAxis: { show: false, min: -10, max: 110 }, 
-    yAxis: { show: false, min: -10, max: 110 },
+    // 🚨 注意：把之前的 xAxis 和 yAxis 删掉了，因为力导向图不需要坐标轴
     tooltip: {
       formatter: function (params: any) {
         // 鼠标移上去时显示：关键词 : 出现次数
-        return `${params.data.name} : 提及 ${params.data.value[2]} 次`
+        return `${params.data.name} : 提及 ${params.data.value} 次`
       },
       backgroundColor: '#121212',
       borderColor: '#333',
       textStyle: { color: '#fff' }
     },
-    series: [{
-      type: 'scatter', // 散点图/气泡图
+  series: [{
+      type: 'graph',
+      layout: 'force',
+      zoom: 0.85,          // 🌟 核心魔法 1：把“相机”往后拉 15%，给盒子四周留出天然的安全边距！
+      force: {
+        repulsion: 120,    // 🌟 稍微把斥力降一点点（从 150 降到 120），让它们不要弹得太开
+        edgeLength: 30,    
+        gravity: 0.2       // 🌟 核心魔法 2：把中心引力从 0.1 加大到 0.2，把所有气泡牢牢吸在画布正中间！
+      },
+      roam: true,          
+      draggable: true,     
       data: bubbleData,
-      // 给气泡加上炫酷的出场动画
-      animationDelay: function (idx: number) {
-        return idx * 100 // 每个气泡延迟 100ms 依次弹出
-      }
+      links: [],           
+      animationDurationUpdate: 1500,
+      animationEasingUpdate: 'quinticInOut'
     }]
   })
 
@@ -316,7 +321,7 @@ window.addEventListener('resize', () => {
           <span class="text-lg font-bold">评论区情感分析</span>
         </div>
 
-        <div ref="chartRef" class="w-full h-52 mb-6"></div>
+        <div ref="chartRef" class="w-full h-72 mb-6"></div>
         <!-- 评论输入框 -->
         <div class="mb-4">
           <div class="flex items-start gap-3">

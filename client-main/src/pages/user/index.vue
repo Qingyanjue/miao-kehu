@@ -215,7 +215,7 @@ const handleDelete = async () => {
 
     <!-- 头像裁剪弹窗 -->
     <el-dialog v-model="cropperVisible" title="裁剪头像" width="600px" :close-on-click-modal="false"
-      :close-on-press-escape="false">
+      :close-on-press-escape="false" class="spotify-glass-dialog">
       <div class="cropper-container">
         <vue-cropper ref="cropper" :img="cropperImg" :info="true" :canScale="true" :autoCrop="true" :fixedBox="true"
           :canMove="true" :canMoveBox="true" :centerBox="true" :infoTrue="true" :fixed="true" :fixedNumber="[1, 1]"
@@ -294,15 +294,16 @@ const handleDelete = async () => {
     <AuthTabs v-model="authVisible" />
   </div>
 </template>
-
 <style scoped>
+/* 🌟 整体卡片背景：Spotify 经典黑灰 */
 .user-container {
   max-width: 1000px;
   margin: 30px auto;
-  padding: 30px 40px 15px;
-  background-color: var(--el-bg-color);
+  padding: 30px 40px 30px;
+  background-color: #181818; /* 核心底色 */
+  border: 1px solid #282828; /* 微弱的边缘线 */
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* 更深邃的阴影 */
 }
 
 .user-header {
@@ -311,11 +312,13 @@ const handleDelete = async () => {
   display: flex;
 }
 
+/* 标题文字全白 */
 .username {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-  color: var(--el-text-color-primary);
-  font-weight: normal;
+  margin: 0 0 30px 0;
+  font-size: 24px;
+  color: #ffffff;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .user-form {
@@ -323,60 +326,94 @@ const handleDelete = async () => {
   margin: 0;
 }
 
-:deep(.el-form-item) {
-  margin-bottom: 24px;
-}
-
-:deep(.el-input__wrapper) {
-  border-radius: 8px;
-  background-color: var(--el-fill-color-blank);
-  box-shadow: 0 0 0 1px var(--el-border-color) inset !important;
-}
-
-:deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px var(--el-border-color-hover) inset !important;
-}
-
-:deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
-}
-
-.submit-btn {
-  border-radius: 8px;
-  width: 140px;
-}
-
-:deep(.el-textarea__inner) {
-  border-radius: 8px;
-  resize: none;
-  background-color: var(--el-fill-color-blank);
-  box-shadow: 0 0 0 1px var(--el-border-color) inset !important;
-}
-
-:deep(.el-textarea__inner:hover) {
-  box-shadow: 0 0 0 1px var(--el-border-color-hover) inset !important;
-}
-
-:deep(.el-textarea__inner:focus) {
-  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
-}
-
-:deep(.el-input.is-disabled .el-input__wrapper) {
-  background-color: var(--el-fill-color-blank);
-  box-shadow: 0 0 0 1px var(--el-border-color-light) inset !important;
-  cursor: not-allowed;
-}
-
 .section {
   margin-bottom: 24px;
 }
 
+/* 副标题：Spotify 标志性冷灰 */
 .section-title {
-  margin-bottom: 8px;
-  color: var(--el-text-color-regular);
+  margin-bottom: 12px;
+  color: #b3b3b3;
   font-size: 14px;
+  font-weight: 600;
 }
 
+:deep(.el-form-item) {
+  margin-bottom: 24px;
+}
+
+/* 🌟 输入框大改造 */
+:deep(.el-input__wrapper),
+:deep(.el-textarea__inner) {
+  border-radius: 8px;
+  background-color: #282828 !important; /* 悬浮感的深灰 */
+  box-shadow: 0 0 0 1px #333333 inset !important; /* 静态暗边框 */
+  color: #ffffff !important; /* 输入的文字变白 */
+}
+
+:deep(.el-input__wrapper:hover),
+:deep(.el-textarea__inner:hover) {
+  box-shadow: 0 0 0 1px #444444 inset !important;
+}
+
+/* 🌟 聚焦时亮起灵魂绿光 */
+:deep(.el-input__wrapper.is-focus),
+:deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 1px #1DB954 inset !important; 
+}
+
+/* 强制内部文字和占位符适配深色 */
+:deep(.el-input__inner) {
+  color: #ffffff !important;
+}
+:deep(.el-input__inner::placeholder),
+:deep(.el-textarea__inner::placeholder) {
+  color: #666666 !important;
+}
+
+/* 禁用状态也得是黑的 */
+:deep(.el-input.is-disabled .el-input__wrapper) {
+  background-color: #1a1a1a !important;
+  box-shadow: 0 0 0 1px #222222 inset !important;
+  cursor: not-allowed;
+}
+
+/* 🌟 按钮重绘 */
+.button-group {
+  margin-top: 50px;
+}
+.submit-btn {
+  border-radius: 500px; /* Spotify 风格的完全圆角 */
+  width: 160px;
+  height: 44px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+/* 更新按钮：荧光绿 + 黑字 */
+.submit-btn.el-button--primary {
+  background-color: #1DB954 !important;
+  border-color: #1DB954 !important;
+  color: #000000 !important;
+}
+.submit-btn.el-button--primary:hover {
+  background-color: #1ed760 !important;
+  transform: scale(1.02);
+}
+
+/* 注销按钮：暗红边框镂空（警告感但不刺眼） */
+.submit-btn.el-button--danger {
+  background-color: transparent !important;
+  border: 1px solid #662222 !important;
+  color: #ff4d4f !important;
+}
+.submit-btn.el-button--danger:hover {
+  background-color: #662222 !important;
+  color: #ffffff !important;
+}
+
+/* 头像区域特效保留 */
 .avatar-wrapper {
   position: relative;
   cursor: pointer;
@@ -384,6 +421,7 @@ const handleDelete = async () => {
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
+  border: 2px solid #282828; /* 给头像加个暗边框 */
 }
 
 .avatar-hover {
@@ -392,7 +430,7 @@ const handleDelete = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -412,10 +450,7 @@ const handleDelete = async () => {
   opacity: 1;
 }
 
-.button-group {
-  margin-top: 40px;
-}
-
+/* 裁剪框相关微调 */
 .cropper-container {
   width: 100%;
   height: 400px;

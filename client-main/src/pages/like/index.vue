@@ -36,15 +36,26 @@ const getSongs = async () => {
     })
     if (res.code === 0 && res.data) {
         const pageData = res.data as PageResult
-        songs.value = pageData.items
-        playlist.value.trackCount = pageData.total
+        
+        // 🌟 核心防御魔法：前端 Map 去重
+        // 利用 Map 对象“键值唯一”的特性，根据歌曲的 ID 进行强制过滤
+        // 无论后端穿透过来多少个重复的 ID，Map 里只保留最后一个
+        const uniqueSongs = Array.from(
+            new Map(pageData.items.map(item => [item.songId || item.id, item])).values()
+        )
+
+        // 把洗干净、去重后的数据喂给页面
+        songs.value = uniqueSongs 
+        
+        // 🌟 修复总数：既然列表有重复，后端传来的 total 大概率也是虚高的，我们用真实长度兜底
+        playlist.value.trackCount = uniqueSongs.length 
+
         // 使用第一首歌的封面作为封面图
-        if (pageData.items.length > 0) {
-            playlist.value.coverImgUrl = pageData.items[0].coverUrl || coverImg
+        if (uniqueSongs.length > 0) {
+            playlist.value.coverImgUrl = uniqueSongs[0].coverUrl || coverImg
         }
     }
 }
-
 const handleSearch = () => {
     currentPage.value = 1 // 搜索时重置页码
     getSongs()

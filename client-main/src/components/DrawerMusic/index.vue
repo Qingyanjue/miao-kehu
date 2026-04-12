@@ -59,7 +59,7 @@ provide('songDetail', songDetail)
   <el-drawer :style="{
     '--track-cover-url': `url(${currentTrack.cover})`,
   }" v-model="showDrawer" direction="btt" size="100%" :modal="false" :showClose="false"
-    class="drawer-bg backdrop-filter backdrop-blur-md">
+    class="spotify-glass-drawer">
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center justify-center gap-2 text-primary-foreground">
@@ -107,5 +107,37 @@ provide('songDetail', songDetail)
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(20px);
   z-index: -1;
+}
+</style>
+
+<style>
+/* 🌟 全屏播放页专属毛玻璃狙击 */
+.spotify-glass-drawer {
+  /* 稍微深一点的黑，让专辑封面更显色 */
+  background: rgba(20, 20, 20, 0.75) !important; 
+  /* 播放页需要更强烈的模糊感 */
+  backdrop-filter: blur(30px) !important; 
+  -webkit-backdrop-filter: blur(30px) !important;
+  /* 播放页通常从底部弹起，只需要顶部有一条若隐若现的高光反光线 */
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 强制抽屉内部背景彻底透明，让毛玻璃质感透出来 */
+.spotify-glass-drawer .el-drawer__body,
+.spotify-glass-drawer .el-drawer__header {
+  background: transparent !important;
+}
+
+/* 如果你的抽屉有自带的标题和关闭按钮，顺手把它们调成 Spotify 灰绿风格 */
+.spotify-glass-drawer .el-drawer__title {
+  color: #ffffff !important;
+}
+.spotify-glass-drawer .el-drawer__headerbtn .el-drawer__close {
+  color: #b3b3b3 !important;
+  font-size: 24px !important;
+}
+.spotify-glass-drawer .el-drawer__headerbtn:hover .el-drawer__close {
+  color: #1DB954 !important;
+  transform: scale(1.1);
 }
 </style>

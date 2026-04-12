@@ -43,6 +43,7 @@ const handleSwitchTab = (tab: string) => {
     width="500px"
     destroy-on-close
     @close="handleClose"
+    class="spotify-glass-dialog"  
   >
     <div>
       <el-tabs v-model="activeTab" class="auth-tabs">
@@ -133,5 +134,47 @@ const handleSwitchTab = (tab: string) => {
 /* 隐藏 Element Plus 默认的底部横线，让毛玻璃更纯净 */
 .auth-tabs :deep(.el-tabs__nav-wrap::after) {
   display: none;
+}
+</style>
+
+<style>
+/* 🌟 不带 scoped 的全局样式，专门狙击传送出去的弹窗 */
+.spotify-glass-dialog {
+  /* 半透明极深灰底色 */
+  background: rgba(24, 24, 24, 0.65) !important; 
+  /* 顶级毛玻璃模糊特效 */
+  backdrop-filter: blur(20px) !important; 
+  -webkit-backdrop-filter: blur(20px) !important;
+  /* 模拟玻璃边缘反光 */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+  border-radius: 16px !important;
+  /* 弥散高级阴影 */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 强制弹窗内部背景透明，让毛玻璃透出来 */
+.spotify-glass-dialog .el-dialog__header,
+.spotify-glass-dialog .el-dialog__body {
+  background: transparent !important;
+}
+
+/* 标题变白 */
+.spotify-glass-dialog .el-dialog__title {
+  color: #ffffff !important;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* 右上角关闭按钮变灰 */
+.spotify-glass-dialog .el-dialog__headerbtn .el-dialog__close {
+  color: #b3b3b3 !important;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+/* 鼠标悬浮关闭按钮时，亮起 Spotify 绿并放大 */
+.spotify-glass-dialog .el-dialog__headerbtn:hover .el-dialog__close {
+  color: #1DB954 !important;
+  transform: scale(1.2);
 }
 </style>
