@@ -140,16 +140,16 @@ onUnmounted(() => {
       </el-form-item>
 
       <el-form-item prop="verificationCode" class="mt-6">
-        <el-input v-model="resetForm.verificationCode" placeholder="验证码" :prefix-icon="Key" />
+        <el-input v-model="resetForm.verificationCode" placeholder="验证码" :prefix-icon="Key" autocomplete="off" />
       </el-form-item>
 
       <el-form-item prop="newPassword" class="mt-6">
-        <el-input v-model="resetForm.newPassword" type="password" placeholder="新密码" :prefix-icon="Lock" show-password />
+        <el-input v-model="resetForm.newPassword" type="password" placeholder="新密码" :prefix-icon="Lock" show-password autocomplete="new-password" />
       </el-form-item>
 
       <el-form-item prop="repeatPassword" class="mt-6">
         <el-input v-model="resetForm.repeatPassword" type="password" placeholder="确认密码" :prefix-icon="Lock"
-          show-password />
+          show-password autocomplete="new-password"/>
       </el-form-item>
 
       <el-form-item class="mt-6">
@@ -175,7 +175,7 @@ onUnmounted(() => {
 }
 
 .form-subtitle {
-  color: #666;
+  color: #b3b3b3; 
   margin-bottom: 24px;
   font-size: 14px;
 }
@@ -184,30 +184,68 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
+/* 🌟 核心：依然是黑灰底色 + 绿色聚焦 */
 :deep(.el-input__wrapper) {
+  background-color: #282828 !important; 
+  box-shadow: 0 0 0 1px #333333 inset !important; 
   border-radius: 8px;
 }
 
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #1DB954 inset !important; 
+}
+
+:deep(.el-input__inner) {
+  color: #ffffff !important;
+}
+
+:deep(.el-input__prefix-inner) {
+  color: #b3b3b3;
+}
+
+/* 验证码按钮暗黑适配 */
+:deep(.el-button--default) {
+  background-color: #282828 !important;
+  border-color: #333333 !important;
+  color: #b3b3b3 !important;
+}
+:deep(.el-button--default:hover) {
+  color: #1DB954 !important;
+  border-color: #1DB954 !important;
+}
+
+/* 提交大按钮 */
 .submit-btn {
   width: 100%;
-  border-radius: 8px;
-  height: 40px;
+  border-radius: 500px;
+  height: 44px;
   font-size: 16px;
+  font-weight: bold;
+  background-color: #1DB954;
+  color: #000000;
+  border: none;
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #1ed760;
+  transform: scale(1.02);
 }
 
 .login-text {
   text-align: center;
   margin-top: 16px;
-  color: #666;
+  color: #b3b3b3;
 }
 
 .login-text a {
-  color: #2a68fa;
+  color: #ffffff;
   font-weight: 600;
   text-decoration: none;
 }
 
 .login-text a:hover {
+  color: #1DB954;
   text-decoration: underline;
 }
 </style>

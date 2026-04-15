@@ -16,8 +16,20 @@ export const getAiMessages = (params: { sessionId: number }) => {
 }
 
 // 4. 发送 AI 对话 (POST 请求)
-export const sendAiChat = (data: { userId: number, sessionId: number, content: string }) => {
+// client-main/src/api/ai.ts
+
+export const sendAiChat = (data: { 
+  userId?: number,         // 可选
+  sessionId?: number,      // 创作中心才传
+  content?: string,        // 创作中心才传
+  messages?: { role: string, content: string }[] // 公共区才传
+}) => {
   return httpPost('/ai/creation/chat', data)
+}
+
+// 👇👇👇 🌟 新增：专门给公共区用的接口！指向 /ai/chat 👇👇👇
+export const sendPublicAiChat = (data: { messages: any[] }) => {
+  return httpPost('/ai/chat', data)
 }
 
 // 5. 删除会话 (DELETE 请求)

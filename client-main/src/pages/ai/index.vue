@@ -6,7 +6,7 @@
           <img v-if="msg.role === 'ai'" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI">
           <img v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" alt="User">
         </div>
-        <div class="message-bubble">{{ msg.content }}</div>
+       <div class="message-bubble" v-html="renderMarkdown(msg.content)"></div>
       </div>
       
       <div v-if="isLoading" class="message-wrapper ai">
@@ -30,6 +30,33 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
+import { sendPublicAiChat } from '@/api/ai' // 🌟 必须引入 API
+import { UserStore } from '@/stores/modules/user' // 🌟 引入 userStore 来判断是否登录
+
+import { marked } from 'marked'
+// 告诉 marked 插件，遇到回车就直接换行
+marked.setOptions({
+  breaks: true
+})
+const renderMarkdown = (text: string) => {
+  if (!text) return ''
+  
+  try {
+    // 兼容 marked 的各种版本和导出方式
+    if (marked && marked.parse) {
+      return marked.parse(text) // 新版 marked 用法
+    } else if (typeof marked === 'function') {
+      // @ts-ignore
+      return marked(text) // 老版 marked 用法
+    }
+    return text 
+  } catch (error) {
+    console.error("Markdown 解析出错了:", error)
+    return text // 如果解析失败，原样返回，保证绝对不会白屏！
+  }
+}
+
+const userStore = UserStore()
 
 // 聊天记录数组
 const messages = ref([
@@ -58,20 +85,19 @@ const sendMessage = async () => {
   isLoading.value = true
   scrollToBottom()
 
+  // 2. 滑动窗口：只取最近 10 条
+  const validMessages = messages.value.filter(msg => msg.role === 'user' || msg.role === 'ai')
+  const historyToSend = validMessages.slice(-10) 
+
   try {
-    // 2. 拨打后端的 API 电话
-    const response = await fetch('http://localhost:8080/ai/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ question: text })
+    // 3. 拨打后端的 API 电话
+    const res = await sendPublicAiChat({
+      messages: historyToSend  
     })
 
-    const res = await response.json()
-
-    // 3. 把大模型的回答贴到屏幕上 (假设后端的成功码是 0 或者 200)
+    // 4. 把大模型的回答贴到屏幕上
     if (res.code === 0 || res.code === 200) { 
+      // 兼容后端直接返回 String 或者是 { output: { choices: [...] } } 的情况
       const finalAnswer = res.data || res.message;
       messages.value.push({ role: 'ai', content: finalAnswer })
     } else {
@@ -212,5 +238,24 @@ const sendMessage = async () => {
   background-color: #444;
   color: #888;
   cursor: not-allowed;
+}
+
+/* 🌟 专门给 Markdown 排版写的样式 */
+:deep(.message-bubble p) {
+  margin: 0 ; /* 段落之间留点空隙 */
+}
+:deep(.message-bubble p:last-child) {
+  margin-bottom: 0;
+}
+:deep(.message-bubble strong) {
+  font-weight: 600;
+  color: #1DB954; /* 把加粗的字体变成骚气的 Spotify 绿！极其酷炫！ */
+}
+:deep(.message-bubble ul), :deep(.message-bubble ol) {
+  padding-left: 20px;
+  margin: 0;
+}
+:deep(.message-bubble li) {
+  margin-bottom: 0px;
 }
 </style>

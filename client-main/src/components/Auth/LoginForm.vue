@@ -73,11 +73,11 @@ function switchToReset() {
     <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0" size="large"
       @keyup.enter="handleLogin">
       <el-form-item prop="email">
-        <el-input v-model="loginForm.email" placeholder="邮箱" :prefix-icon="Message" />
+        <el-input v-model="loginForm.email" placeholder="邮箱" :prefix-icon="Message" autocomplete="off" />
       </el-form-item>
 
       <el-form-item prop="password" class="mt-6">
-        <el-input v-model="loginForm.password" type="password" placeholder="密码" :prefix-icon="Lock" show-password />
+        <el-input v-model="loginForm.password" type="password" placeholder="密码" :prefix-icon="Lock" show-password autocomplete="new-password"/>
       </el-form-item>
 
       <div class="forgot-password">

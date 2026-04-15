@@ -32,7 +32,7 @@
             <img v-if="msg.role === 'assistant'" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI">
             <img v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" alt="User">
           </div>
-          <div class="message-bubble">{{ msg.content }}</div>
+          <div class="message-bubble" v-html="renderMarkdown(msg.content)"></div>
         </div>
         
         <div v-if="isLoading" class="message-wrapper assistant">
@@ -67,6 +67,27 @@ import { ElMessage } from 'element-plus'
 import { UserStore } from '@/stores/modules/user'
 // 🌟 1. 引入我们刚刚写好的 5 个正规军接口
 import { getAiSessions, createAiSession, getAiMessages, sendAiChat, deleteAiSession } from '@/api/ai'
+
+import { marked } from 'marked'
+
+// 🌟 新增：写一个专门的“安全解析函数”给 HTML 模板使用
+const renderMarkdown = (text: string) => {
+  if (!text) return ''
+  
+  try {
+    // 兼容 marked 的各种版本和导出方式
+    if (marked && marked.parse) {
+      return marked.parse(text) // 新版 marked 用法
+    } else if (typeof marked === 'function') {
+      // @ts-ignore
+      return marked(text) // 老版 marked 用法
+    }
+    return text 
+  } catch (error) {
+    console.error("Markdown 解析出错了:", error)
+    return text // 如果解析失败，原样返回，保证绝对不会白屏！
+  }
+}
 
 const userStore = UserStore()
 const currentUserId = computed(() => userStore.userInfo?.userId)
@@ -341,5 +362,24 @@ onMounted(() => {
 
 .delete-btn:hover {
   transform: scale(1.2); /* 鼠标指着垃圾桶时稍微放大一点点 */
+}
+
+/* 🌟 专门给 Markdown 排版写的样式 */
+:deep(.message-bubble p) {
+  margin: 0 0 2px 0; /* 段落之间留点空隙 */
+}
+:deep(.message-bubble p:last-child) {
+  margin-bottom: 0;
+}
+:deep(.message-bubble strong) {
+  font-weight: 600;
+  color: #1DB954; /* 把加粗的字体变成骚气的 Spotify 绿！极其酷炫！ */
+}
+:deep(.message-bubble ul), :deep(.message-bubble ol) {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+:deep(.message-bubble li) {
+  margin-bottom: 4px;
 }
 </style>
