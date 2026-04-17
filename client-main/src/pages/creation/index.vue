@@ -1,4 +1,3 @@
-
 <template>
   <div class="creation-container">
     <!-- 左侧：历史创作列表 -->
@@ -25,21 +24,49 @@
     </div>
 
     <!-- 右侧：工作区（已选中会话） -->
-    <div class="chat-area" v-if="currentSessionId">
-      <div class="chat-window" ref="chatWindow">
-        <div v-for="(msg, index) in messages" :key="index" :class="['message-wrapper', msg.role]">
-          <div class="avatar">
-            <img v-if="msg.role === 'assistant'" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI">
-            <img v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" alt="User">
-          </div>
-          <div class="message-bubble" v-html="renderMarkdown(msg.content)"></div>
-        </div>
+  <div class="chat-area" v-if="currentSessionId">
+    <div class="chat-window" ref="chatWindow">
+  <div v-for="(msg, index) in messages" :key="index" :class="['message-wrapper', msg.role]">
+    
+    <div class="avatar">
+      <img v-if="msg.role === 'assistant'" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI">
+      <img v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" alt="User">
+    </div>
+
+    <div class="message-bubble">
+      
+      <div v-if="!msg.type || msg.type === 'text'" v-html="renderMarkdown(msg.content)"></div>
+
+      <div v-else-if="msg.type === 'music'" class="music-card-content">
         
-        <div v-if="isLoading" class="message-wrapper assistant">
-          <div class="avatar"><img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI"></div>
-          <div class="message-bubble typing">AI 制作人正在疯狂寻找灵感中...</div>
+        <div v-if="msg.loading" class="music-loading-box">
+          <el-tag type="warning" class="animate-pulse">🕒 AI 制作人正在编曲中 (约1分钟)...</el-tag>
+          <el-skeleton :rows="2" animated style="margin-top: 10px;" />
         </div>
-      </div>
+
+        <div v-else class="music-player-area">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <el-tag type="success" size="small">✅ 创作成功</el-tag>
+            <span style="font-size: 11px; color: #888;">⚠️ 云端保留15天</span>
+          </div>
+
+          <div v-for="song in msg.audioUrls" :key="song.id" class="song-item-box" 
+               style="background: rgba(0,0,0,0.1); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+            <p style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">{{ song.title || '妙音 AI 乐章' }}</p>
+            <audio :src="song.audio_url" controls style="width: 100%; height: 35px;"></audio>
+            <div style="text-align: right; margin-top: 6px;">
+              <el-link :href="song.audio_url" target="_blank" type="primary" :underline="false" style="font-size: 12px;">
+                ⬇️ 下载 MP3
+              </el-link>
+            </div>
+          </div>
+        </div>
+
+      </div> </div> </div> <div v-if="isLoading" class="message-wrapper assistant">
+    <div class="avatar"><img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="AI"></div>
+    <div class="message-bubble typing">AI 制作人正在疯狂寻找灵感中...</div>
+  </div>
+</div>
 
       <div class="input-area">
         <input
@@ -50,6 +77,13 @@
           :disabled="isLoading"
         />
         <button @click="sendMessage" :disabled="isLoading || !inputContent.trim()">发送</button>
+        <button 
+          @click="handleGenerateMusic" 
+          :disabled="isMusicLoading" 
+          style="background-color: #e6a23c; margin-left: 10px;"
+        >
+          🎵 创作歌曲
+        </button>
       </div>
     </div>
 
@@ -62,11 +96,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from 'vue'
+import { ref, onMounted, nextTick, computed, reactive} from 'vue'
 import { ElMessage } from 'element-plus'
 import { UserStore } from '@/stores/modules/user'
 // 🌟 1. 引入我们刚刚写好的 5 个正规军接口
-import { getAiSessions, createAiSession, getAiMessages, sendAiChat, deleteAiSession } from '@/api/ai'
+import { getAiSessions, createAiSession, getAiMessages, sendAiChat, deleteAiSession, generateMusicApi, getMusicStatusApi, saveDirectMsgApi } from '@/api/ai'
 
 import { marked } from 'marked'
 
@@ -137,21 +171,48 @@ const createNewSession = async () => {
   }
 }
 
-// 🌟 6. 切换会话
 const switchSession = async (sessionId: number) => {
   currentSessionId.value = sessionId
   messages.value = [] 
   try {
     const res: any = await getAiMessages({ sessionId })
     if (res.code === 0 || res.code === 200) {
-      messages.value = res.data
+      
+      messages.value = res.data.map((msg: any) => {
+        
+        // 🌟 核心解密：如果 content 里面有我们留下的暗号
+        if (msg.content && msg.content.startsWith('@@MUSIC@@')) {
+           try {
+             // 1. 把暗号头切掉，剩下的就是纯 JSON 数据
+             const jsonStr = msg.content.replace('@@MUSIC@@', '');
+             // 2. 变回数组
+             const urls = JSON.parse(jsonStr);
+             
+             return {
+                ...msg,
+                type: 'music', // 强制告诉页面渲染音乐卡片
+                loading: false,
+                audioUrls: urls,
+                content: '[🎵 AI 专属音乐]' // 给一个兜底的文字
+             };
+           } catch(e) {
+             console.error("解析音乐暗号失败", e);
+           }
+        }
+        
+        // 如果没有暗号，说明是普通的文字聊天，正常返回
+        return {
+           ...msg,
+           type: 'text'
+        };
+      });
+
       scrollToBottom()
     }
   } catch (error) {
     console.error("获取记录失败", error)
   }
 }
-
 // 🌟 7. 发送创作请求
 const sendMessage = async () => {
   const text = inputContent.value.trim()
@@ -208,6 +269,151 @@ onMounted(() => {
     fetchSessions()
   }
 })
+
+const isMusicLoading = ref(false); // 控制音乐按钮是否可以点击
+
+// 🌟 完美适配版：函数名和你的按钮对上了！
+const handleGenerateMusic = async () => {
+  console.log("👉 1. 按钮被成功点击了！");
+
+  try {
+    // 🌟 变量名修正：使用你的 inputContent
+    const text = inputContent.value ? inputContent.value.trim() : "";
+    console.log("👉 2. 拿到的用户输入是：", text);
+
+    if (!text) {
+      ElMessage.warning("请在输入框写下你想要的歌曲感觉或主题哦！");
+      return;
+    }
+
+    // A. 用户的消息上屏
+    messages.value.push({ role: 'user', content: text } as any);
+    // 🌟 A. 将用户的请求直接存入数据库
+    try {
+      await saveDirectMsgApi({
+        sessionId: currentSessionId.value,
+        userId: currentUserId.value,
+        role: 'user',
+        content: text,
+        msgType: 'text' // 用户发的是纯文本
+      });
+    } catch (e) {
+      console.error("保存用户输入失败", e);
+    }
+    inputContent.value = ''; // 清空你的输入框
+    scrollToBottom(); // 让聊天滚到底部
+
+    // B. AI 的加载气泡上屏
+    const musicMsg = reactive({
+      role: 'assistant',
+      type: 'music',
+      loading: true,
+      audioUrls: []
+    });
+    messages.value.push(musicMsg as any);
+    console.log("👉 3. 聊天气泡已经成功推入界面！");
+    scrollToBottom();
+
+    isMusicLoading.value = true; // 锁定按钮，防止连点
+
+    // 开始呼叫后端
+    console.log("🚀 4. 准备呼叫后端生成接口...");
+    const res: any = await generateMusicApi(text);
+    console.log("📥 5. 后端返回结果：", res);
+    
+    if (res.code === 200 || res.code === 0 || res.code === 1) { 
+      const apiData = res.data; 
+      let taskIds = "";
+      const innerData = apiData?.data || apiData; 
+
+      if (innerData) {
+        if (Array.isArray(innerData)) {
+          taskIds = innerData.map((t: any) => t.id || t.taskId).filter(Boolean).join(',');
+        } else if (typeof innerData === 'object') {
+          taskIds = innerData.taskId || innerData.task_id || innerData.id || "";
+        }
+      }
+
+      if (taskIds) {
+        console.log("🎯 6. 拿到任务 ID：", taskIds, "开始轮询！");
+        startGenericPolling(taskIds, musicMsg); 
+      } else {
+        musicMsg.loading = false;
+        isMusicLoading.value = false;
+        ElMessage.error("发起失败：未获取到任务ID");
+      }
+    } else {
+       musicMsg.loading = false;
+       isMusicLoading.value = false;
+       ElMessage.error("生成报错: " + (res.msg || "未知错误"));
+    }
+  } catch (error) {
+    console.error("❌ 严重错误，代码执行崩溃：", error);
+    isMusicLoading.value = false;
+    ElMessage.error("前端执行出错，请看 F12 控制台！");
+  }
+};
+
+// 通用版轮询函数（接收具体的聊天气泡 targetMsg 进行更新）
+const startGenericPolling = (ids: string, targetMsg: any) => {
+  const timer = setInterval(async () => {
+    try {
+      const res = await getMusicStatusApi(ids);
+      
+      if ((res.code === 200 || res.code === 1 || res.code === 0) && res.data && res.data.length > 0) {
+        const sunoRes = res.data[0]; 
+        
+        if (sunoRes.code === 200 || sunoRes.code === 0 || sunoRes.code === 1) {
+          const taskData = sunoRes.data; 
+          
+          if (taskData) {
+            if (taskData.status === "SUCCESS") {
+              clearInterval(timer); 
+              
+              const songs = taskData.response?.sunoData || [];
+              if (Array.isArray(songs) && songs.length > 0) {
+                // 1. 组装给页面显示用的数据
+                  targetMsg.audioUrls = songs.map((song: any) => ({
+                    id: song.id || Math.random().toString(),
+                    title: song.title || '妙音 AI 乐章',
+                    tags: song.tags || '流行',
+                    audio_url: song.audioUrl || song.audio_url
+                  })).filter((s: any) => s.audio_url); 
+                  
+                  targetMsg.loading = false;
+                  isMusicLoading.value = false;
+                  ElMessage.success("🎉 AI 创作完成！");
+
+              // 🌟 B. 降维打击：把音乐数据转成特殊字符串，强行塞进 content 字段！
+                try {
+                  await saveDirectMsgApi({
+                    sessionId: currentSessionId.value,
+                    userId: currentUserId.value,
+                    role: 'assistant',
+                    // 🌟 核心魔法：用 @@MUSIC@@ 作为暗号头，后面跟着真实的音乐数据
+                    content: '@@MUSIC@@' + JSON.stringify(targetMsg.audioUrls)
+                    // msgType 和 mediaData 这两个字段直接删掉，我们不用它了！
+                  });
+                } catch (err) {
+                  console.error("保存音乐记录到数据库失败", err);
+                }
+              }
+            } 
+            else if (taskData.status && (taskData.status.includes("FAIL") || taskData.status.includes("EXCEPTION"))) {
+               clearInterval(timer);
+               targetMsg.loading = false;
+               isMusicLoading.value = false;
+               ElMessage.error("中转站生成失败了");
+            }
+          }
+        }
+      }
+    } catch (error) {
+       console.log("轮询异常:", error);
+    }
+  }, 5000); 
+};
+
 </script>
 
 <style scoped>
@@ -319,9 +525,16 @@ onMounted(() => {
 }
 
 .message-bubble {
-  max-width: 75%; padding: 14px 20px; border-radius: 12px;
-  line-height: 1.6; font-size: 15px; word-wrap: break-word; white-space: pre-wrap;
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+  font-size: 15px;
+  word-wrap: break-word;
+  /* 🌟 核心：删除了之前的 white-space: pre-wrap; */
+  position: relative;
 }
+
 
 .assistant .message-bubble { background-color: #2b2b31; border-top-left-radius: 2px; }
 .user .message-bubble { background-color: #1db954; color: white; border-top-right-radius: 2px; }
@@ -365,9 +578,7 @@ onMounted(() => {
 }
 
 /* 🌟 专门给 Markdown 排版写的样式 */
-:deep(.message-bubble p) {
-  margin: 0 0 2px 0; /* 段落之间留点空隙 */
-}
+
 :deep(.message-bubble p:last-child) {
   margin-bottom: 0;
 }
@@ -381,5 +592,36 @@ onMounted(() => {
 }
 :deep(.message-bubble li) {
   margin-bottom: 4px;
+}
+
+/* 🌟 双保险：强制抹除 Markdown 渲染后最后一个段落的任何多余间距 */
+:deep(.message-bubble > div > p:last-child) {
+  margin-bottom: 0 !important;
+}
+
+/* 3. 针对音乐卡片的专项加宽（解决进度条太短的问题） */
+.music-card-content {
+  /* 给音乐卡片一个稳固的宽度，保证进度条足够长 */
+  min-width: 380px; 
+  max-width: 500px;
+  padding: 4px 0;
+}
+
+/* 让编曲中的提示有呼吸灯效果，显得很高级 */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 5. 调整音频播放器的样式，使其更美观 */
+audio {
+  width: 100%;
+  height: 36px;
+  filter: invert(0.1); /* 稍微调整颜色以适配深色背景 */
+  border-radius: 8px;
 }
 </style>

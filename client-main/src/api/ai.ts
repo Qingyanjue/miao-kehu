@@ -36,3 +36,19 @@ export const sendPublicAiChat = (data: { messages: any[] }) => {
 export const deleteAiSession = (sessionId: number) => {
   return http('delete', '/ai/creation/session', { params: { sessionId } })
 }
+
+// 1. 发起 AI 创作音乐请求
+export const generateMusicApi = (prompt: string) => {
+  return httpPost("/ai/creation/music/generate", { prompt });
+};
+
+// 2. 查询 AI 音乐的生成状态和链接
+export const getMusicStatusApi = (ids: string) => {
+  return httpGet("/ai/creation/music/status?ids=" + ids);
+};
+
+// 直接把消息存入数据库（不触发大模型聊天）
+export const saveDirectMsgApi = (data: any) => {
+  return httpPost("/ai/creation/message/save_direct", data); 
+  // ⚠️ 注意：这里的 URL 请和你 Controller 里写的 @RequestMapping 路径保持一致！
+};
